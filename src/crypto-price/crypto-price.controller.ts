@@ -25,7 +25,7 @@ export class CryptoPriceController {
     type: [CryptoPrice],
   })
   @ApiResponse({ status: 500, description: 'Some server error' })
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   getPricesPolygon() {
     return this.cryptoPriceService.getCryptoPricesPolygon();
   }

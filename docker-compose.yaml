@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    command: pnpm run start:dev reservations
+    command: npm run start:dev
     env_file:
       - ./.env
     ports:
