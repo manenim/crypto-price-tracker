@@ -7,6 +7,7 @@ import Moralis from 'moralis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPrice } from './entities/crypto-price.entity';
 import { Repository } from 'typeorm';
+import { AlertsService } from 'src/alerts/alerts.service';
 
 @Injectable()
 export class CryptoPriceService {
@@ -16,6 +17,7 @@ export class CryptoPriceService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly alertsService: AlertsService,
     @InjectRepository(CryptoPrice)
     private readonly cryptoPriceRepository: Repository<CryptoPrice>,
   ) {}
@@ -38,6 +40,19 @@ export class CryptoPriceService {
         include: 'percent_change',
         address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',
       });
+
+      // check if alert exist for this chain
+      const alert = await this.alertsService.findOneByChainAndPrice(
+        response.raw.tokenName,
+        Math.round(response.raw.usdPrice),
+      );
+      if (!alert) {
+        console.log('NO Alert exist for this chain');
+      }
+
+      // send email  for alert
+
+      // check if price change is greater than 3%
 
       const currentPrice = response.raw.usdPrice;
 

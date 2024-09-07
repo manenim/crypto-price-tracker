@@ -5,10 +5,12 @@ import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoPrice } from './entities/crypto-price.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AlertsModule } from 'src/alerts/alerts.module';
 
 @Module({
   imports: [
     HttpModule,
+    AlertsModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([CryptoPrice]),
   ],

@@ -4,54 +4,66 @@ import { CreateCryptoPriceDto } from './dto/create-crypto-price.dto';
 import { UpdateCryptoPriceDto } from './dto/update-crypto-price.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiProperty,
+} from '@nestjs/swagger';
+import { CryptoPrice } from './entities/crypto-price.entity';
+
+@ApiTags('Crypto Price')
 @Controller('crypto-price')
 export class CryptoPriceController {
   constructor(private readonly cryptoPriceService: CryptoPriceService) {}
 
+  @ApiOperation({ summary: 'Create a new crypto price' })
+  @ApiBody({ type: CreateCryptoPriceDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The crypto price was successfully created',
+    type: CryptoPrice,
+  })
+  @ApiResponse({ status: 500, description: 'Some server error' })
   @Post()
   create(@Body() createCryptoPriceDto: CreateCryptoPriceDto) {
     return this.cryptoPriceService.create(createCryptoPriceDto);
   }
 
-  // @Get('/get-prices-polygon')
-  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @ApiOperation({ summary: 'Get crypto prices from Polygon' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful response',
+    type: [CryptoPrice],
+  })
+  @ApiResponse({ status: 500, description: 'Some server error' })
+  @Cron(CronExpression.EVERY_5_MINUTES)
   getPricesPolygon() {
     return this.cryptoPriceService.getCryptoPricesPolygon();
   }
 
-  // @Get('/get-prices-ether')
-  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @ApiOperation({ summary: 'Get crypto prices from Ether' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful response',
+    type: [CryptoPrice],
+  })
+  @ApiResponse({ status: 500, description: 'Some server error' })
+  @Cron(CronExpression.EVERY_5_MINUTES)
   getPricesEther() {
     return this.cryptoPriceService.getCryptoPricesEther();
   }
 
-  // private readonly logger = new Logger(TasksService.name);
-
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  handleCron() {
-    console.log('Called when the current second is 2');
-  }
-
+  @ApiOperation({ summary: 'Get all crypto prices' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful response',
+    type: [CryptoPrice],
+  })
+  @ApiResponse({ status: 500, description: 'Some server error' })
   @Get()
   findAll() {
     return this.cryptoPriceService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cryptoPriceService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCryptoPriceDto: UpdateCryptoPriceDto,
-  ) {
-    return this.cryptoPriceService.update(+id, updateCryptoPriceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cryptoPriceService.remove(+id);
   }
 }
