@@ -53,4 +53,16 @@ export class CryptoPriceController {
   findAll() {
     return this.cryptoPriceService.findAll();
   }
+
+  @ApiOperation({ summary: 'Get crypto prices for a specific chain' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful response',
+    type: [CryptoPrice],
+  })
+  @Get(':chain')
+  async getPrices(@Param('chain') chain: string) {
+    return await this.cryptoPriceService.getHourlyPrices(chain);
+  }
+  
 }

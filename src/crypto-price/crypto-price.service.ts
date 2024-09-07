@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import Moralis from 'moralis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPrice } from './entities/crypto-price.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { AlertsService } from 'src/alerts/alerts.service';
 import { MailService } from 'src/mail/mail.service';
 
@@ -91,7 +91,7 @@ export class CryptoPriceService {
         price: response.raw.usdPrice,
       });
       const savedToken = await this.cryptoPriceRepository.save(token);
-      
+
       return savedToken;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -166,4 +166,30 @@ export class CryptoPriceService {
     return await this.cryptoPriceRepository.find();
   }
 
+  async getHourlyPrices(chain: string) {
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const startOfYesterday = new Date(
+      startOfToday.getTime() - 24 * 60 * 60 * 1000,
+    );
+
+    const hourlyPrices = await this.cryptoPriceRepository.find({
+      where: {
+        tokenName: chain,
+        createdAt: Between(startOfYesterday, startOfToday),
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+
+    return hourlyPrices.map((price) => ({
+      hour: price.createdAt.getHours(),
+      price: price.price,
+    }));
+  }
 }
