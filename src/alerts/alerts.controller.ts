@@ -15,7 +15,7 @@ import { UpdateAlertDto } from './dto/update-alert.dto';
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
-  @Post()
+  @Post('/set-alert')
   create(@Body() createAlertDto: CreateAlertDto) {
     return this.alertsService.create(createAlertDto);
   }
@@ -25,13 +25,5 @@ export class AlertsController {
     return this.alertsService.findAll();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAlertDto: UpdateAlertDto) {
-    return this.alertsService.update(+id, updateAlertDto);
-  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.alertsService.remove(+id);
-  }
 }

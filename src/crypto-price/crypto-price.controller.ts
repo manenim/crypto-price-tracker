@@ -18,19 +18,6 @@ import { CryptoPrice } from './entities/crypto-price.entity';
 export class CryptoPriceController {
   constructor(private readonly cryptoPriceService: CryptoPriceService) {}
 
-  @ApiOperation({ summary: 'Create a new crypto price' })
-  @ApiBody({ type: CreateCryptoPriceDto })
-  @ApiResponse({
-    status: 201,
-    description: 'The crypto price was successfully created',
-    type: CryptoPrice,
-  })
-  @ApiResponse({ status: 500, description: 'Some server error' })
-  @Post()
-  create(@Body() createCryptoPriceDto: CreateCryptoPriceDto) {
-    return this.cryptoPriceService.create(createCryptoPriceDto);
-  }
-
   @ApiOperation({ summary: 'Get crypto prices from Polygon' })
   @ApiResponse({
     status: 200,
@@ -38,7 +25,7 @@ export class CryptoPriceController {
     type: [CryptoPrice],
   })
   @ApiResponse({ status: 500, description: 'Some server error' })
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   getPricesPolygon() {
     return this.cryptoPriceService.getCryptoPricesPolygon();
   }

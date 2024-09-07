@@ -59,17 +59,11 @@ export class AlertsService {
   }
 
   async findOneByChainAndPrice(chain: string, price: number) {
-    try {
-      const alert = await this.alertRepository.findOne({
-        where: { chain: chain, priceInDollars: price },
-      });
-      if (!alert) {
-        throw new BadRequestException('Alert not found');
-      }
-      return alert;
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
+    const alert = await this.alertRepository.findOne({
+      where: { chain: chain, priceInDollars: price },
+    });
+
+    return alert;
   }
 
   update(id: number, updateAlertDto: UpdateAlertDto) {

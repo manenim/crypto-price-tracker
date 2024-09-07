@@ -21,6 +21,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
         defaults: {
           from: '"No Reply" <manenimabasiudoh@gmil.com>',
         },
+       
+        preview: false
       }),
     }),
   ],

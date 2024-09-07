@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPrice } from './entities/crypto-price.entity';
 import { Repository } from 'typeorm';
 import { AlertsService } from 'src/alerts/alerts.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class CryptoPriceService {
@@ -15,6 +16,7 @@ export class CryptoPriceService {
 
   private apiKey = this.configService.getOrThrow('MORALIS_API_KEY');
   constructor(
+    private readonly mailService: MailService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly alertsService: AlertsService,
@@ -46,11 +48,16 @@ export class CryptoPriceService {
         response.raw.tokenName,
         Math.round(response.raw.usdPrice),
       );
-      if (!alert) {
-        console.log('NO Alert exist for this chain');
+      if (alert) {
+        // send email  for alert
+        this.mailService.sendEmail(
+          alert.email,
+          'Price Alert',
+          `The price of ${response.raw.tokenName} has reached ${Math.round(
+            response.raw.usdPrice,
+          )}`,
+        );
       }
-
-      // send email  for alert
 
       // check if price change is greater than 3%
 
@@ -63,18 +70,20 @@ export class CryptoPriceService {
           createdAt: previousHour,
         },
       });
-      if (!previousPriceDocument) {
-        throw new InternalServerErrorException(
-          'No token available in the last one hour',
-        );
-      }
+      if (previousPriceDocument) {
+        const previousPrice = previousPriceDocument.price;
+        const percentageChange =
+          ((currentPrice - previousPrice) / previousPrice) * 100;
 
-      const previousPrice = previousPriceDocument.price;
-      const percentageChange =
-        ((currentPrice - previousPrice) / previousPrice) * 100;
-
-      if (percentageChange > 3) {
-        console.log('Price change is greater than 3%');
+        if (percentageChange > 3) {
+          this.mailService.sendEmail(
+            this.configService.getOrThrow('HYPERHIRE_EMAIL'),
+            'Price Alert',
+            `The price of ${response.raw.tokenName} has reached ${Math.round(
+              response.raw.usdPrice,
+            )}`,
+          );
+        }
       }
 
       const token = this.cryptoPriceRepository.create({
@@ -82,6 +91,7 @@ export class CryptoPriceService {
         price: response.raw.usdPrice,
       });
       const savedToken = await this.cryptoPriceRepository.save(token);
+      
       return savedToken;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -98,6 +108,49 @@ export class CryptoPriceService {
         address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       });
 
+      // check if alert exist for this chain
+      const alert = await this.alertsService.findOneByChainAndPrice(
+        response.raw.tokenName,
+        Math.round(response.raw.usdPrice),
+      );
+      if (alert) {
+        // send email  for alert
+        this.mailService.sendEmail(
+          alert.email,
+          'Price Alert',
+          `The price of ${response.raw.tokenName} has reached ${Math.round(
+            response.raw.usdPrice,
+          )}`,
+        );
+      }
+
+      // check if price change is greater than 3%
+
+      const currentPrice = response.raw.usdPrice;
+
+      const previousHour = new Date(Date.now() - 60 * 60 * 1000);
+
+      const previousPriceDocument = await this.cryptoPriceRepository.findOne({
+        where: {
+          createdAt: previousHour,
+        },
+      });
+      if (previousPriceDocument) {
+        const previousPrice = previousPriceDocument.price;
+        const percentageChange =
+          ((currentPrice - previousPrice) / previousPrice) * 100;
+
+        if (percentageChange > 3) {
+          this.mailService.sendEmail(
+            this.configService.getOrThrow('HYPERHIRE_EMAIL'),
+            'Price Alert',
+            `The price of ${response.raw.tokenName} has reached ${Math.round(
+              response.raw.usdPrice,
+            )}`,
+          );
+        }
+      }
+
       const token = this.cryptoPriceRepository.create({
         tokenName: response.raw.tokenName,
         price: response.raw.usdPrice,
@@ -109,23 +162,8 @@ export class CryptoPriceService {
     }
   }
 
-  create(createCryptoPriceDto: CreateCryptoPriceDto) {
-    return 'This action adds a new cryptoPrice';
-  }
-
   async findAll() {
     return await this.cryptoPriceRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cryptoPrice`;
-  }
-
-  update(id: number, updateCryptoPriceDto: UpdateCryptoPriceDto) {
-    return `This action updates a #${id} cryptoPrice`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} cryptoPrice`;
-  }
 }
