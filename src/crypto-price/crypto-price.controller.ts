@@ -55,7 +55,9 @@ export class CryptoPriceController {
     return this.cryptoPriceService.findAll();
   }
 
-  @ApiOperation({ summary: 'Get crypto prices for a specific chain' })
+  @ApiOperation({
+    summary: 'Get crypto prices for a specific chain, polygon or ethereum',
+  })
   @ApiResponse({
     status: 200,
     description: 'Successful response',
