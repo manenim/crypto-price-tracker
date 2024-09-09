@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, ParseEnumPipe } from '@nestjs/common';
 import { CryptoPriceService } from './crypto-price.service';
 import { CreateCryptoPriceDto } from './dto/create-crypto-price.dto';
 import { UpdateCryptoPriceDto } from './dto/update-crypto-price.dto';
@@ -12,6 +12,7 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { CryptoPrice } from './entities/crypto-price.entity';
+import { ChainEnum } from 'src/alerts/enums/chains.enums';
 
 @ApiTags('Crypto Price')
 @Controller('crypto-price')
@@ -60,9 +61,27 @@ export class CryptoPriceController {
     description: 'Successful response',
     type: [CryptoPrice],
   })
-  @Get(':chain')
-  async getPrices(@Param('chain') chain: string) {
+  @ApiResponse({
+    status: 500,
+    description: 'chain parameter must be either polygon or ethereum',
+  })
+  @Get(':chain/hourly-price')
+  async getPrices(
+    @Param('chain', new ParseEnumPipe(ChainEnum)) chain: ChainEnum,
+  ) {
     return await this.cryptoPriceService.getHourlyPrices(chain);
   }
-  
+
+  //delete all
+  @ApiOperation({ summary: 'Delete all crypto prices' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful response',
+    type: [CryptoPrice],
+  })
+  @ApiResponse({ status: 500, description: 'Some server error' })
+  @Delete()
+  deleteAll() {
+    return this.cryptoPriceService.deleteAll();
+  }
 }

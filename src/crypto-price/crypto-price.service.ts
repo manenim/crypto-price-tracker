@@ -87,7 +87,7 @@ export class CryptoPriceService {
       }
 
       const token = this.cryptoPriceRepository.create({
-        tokenName: response.raw.tokenName,
+        tokenName: 'polygon',
         price: response.raw.usdPrice,
       });
       const savedToken = await this.cryptoPriceRepository.save(token);
@@ -152,7 +152,7 @@ export class CryptoPriceService {
       }
 
       const token = this.cryptoPriceRepository.create({
-        tokenName: response.raw.tokenName,
+        tokenName: 'ethereum',
         price: response.raw.usdPrice,
       });
       const savedToken = await this.cryptoPriceRepository.save(token);
@@ -187,9 +187,26 @@ export class CryptoPriceService {
       },
     });
 
-    return hourlyPrices.map((price) => ({
-      hour: price.createdAt.getHours(),
-      price: price.price,
-    }));
+    if (hourlyPrices.length === 0) {
+       const hourlyPrices = await this.cryptoPriceRepository.find({
+         where: {
+           tokenName: chain,
+         },
+         order: {
+           createdAt: 'ASC',
+         },
+       });
+       return hourlyPrices
+    }
+
+    return hourlyPrices
+
+    
   }
+
+  // delete all
+  async deleteAll() {
+    return await this.cryptoPriceRepository.delete({});
+  }
+
 }
